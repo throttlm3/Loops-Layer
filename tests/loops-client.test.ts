@@ -49,6 +49,51 @@ describe("Loops read-only client", () => {
     await expect(client.listCampaigns({ perPage: 9 })).rejects.toThrow("between 10 and 50");
   });
 
+  it("lists all campaign pages using the returned cursor", async () => {
+    const requestedUrls: string[] = [];
+    const client = new LoopsClient({
+      apiKey: "secret",
+      baseUrl: "https://loops.test/api",
+      fetchFn: async (input) => {
+        const url = String(input);
+        requestedUrls.push(url);
+        if (requestedUrls.length === 1) {
+          return response({
+            pagination: { totalResults: 2, returnedResults: 1, nextCursor: "cursor-2" },
+            data: [{ id: "campaign-1", name: "One", status: "Draft" }],
+          });
+        }
+        return response({
+          pagination: { totalResults: 2, returnedResults: 1, nextCursor: null },
+          data: [{ id: "campaign-2", name: "Two", status: "Sent" }],
+        });
+      },
+    });
+
+    await expect(client.listAllCampaigns()).resolves.toEqual([
+      { id: "campaign-1", name: "One", status: "Draft" },
+      { id: "campaign-2", name: "Two", status: "Sent" },
+    ]);
+    expect(requestedUrls).toEqual([
+      "https://loops.test/api/v1/campaigns",
+      "https://loops.test/api/v1/campaigns?cursor=cursor-2",
+    ]);
+  });
+
+  it("surfaces structured provider errors", async () => {
+    const client = new LoopsClient({
+      apiKey: "secret",
+      fetchFn: async () => response({ message: "bad key" }, { status: 401, headers: { "x-request-id": "req-1" } }),
+    });
+
+    await expect(client.checkApiKey()).rejects.toMatchObject({
+      name: "LoopsApiError",
+      status: 401,
+      body: { message: "bad key" },
+      requestId: "req-1",
+    });
+  });
+
   it("URL-encodes campaign IDs", async () => {
     let requestedUrl = "";
     const client = new LoopsClient({

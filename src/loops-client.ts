@@ -65,6 +65,17 @@ export class LoopsClient {
     return this.request<CampaignSummary>(buildCampaignPath(campaignId));
   }
 
+  async listAllCampaigns(): Promise<CampaignSummary[]> {
+    const campaigns: CampaignSummary[] = [];
+    let cursor: string | undefined;
+    do {
+      const page = await this.listCampaigns(cursor ? { cursor } : {});
+      campaigns.push(...page.data);
+      cursor = page.pagination.nextCursor ?? undefined;
+    } while (cursor);
+    return campaigns;
+  }
+
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await this.fetchFn(`${this.baseUrl}${path}`, {
       ...init,
