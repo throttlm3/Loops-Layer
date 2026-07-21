@@ -1,0 +1,28 @@
+# Secrets and environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Lead and campaign data
+*.csv
+*.jsonl
+/data/
+/test-data/
+
+# Runtime/build artifacts
+node_modules/
+dist/
+build/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.coverage
+coverage/
+
+# Editors/OS
+.DS_Store
+.vscode/
+.idea/
