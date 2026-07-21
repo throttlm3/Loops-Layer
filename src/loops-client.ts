@@ -59,6 +59,14 @@ export interface AudienceSegment {
   name?: string;
   [key: string]: unknown;
 }
+export interface Theme { id: string; [key: string]: unknown }
+export interface Component { id: string; [key: string]: unknown }
+export interface ContactProperty { name?: string; [key: string]: unknown }
+export interface CreateCampaignInput { name: string; mailingListId?: string; audienceSegmentId?: string; audienceFilter?: unknown }
+export interface UpdateCampaignInput { name?: string; mailingListId?: string; audienceSegmentId?: string; audienceFilter?: unknown; scheduling?: unknown }
+export interface EmailMessageUpdate { expectedRevisionId: string; subject?: string; previewText?: string; fromName?: string; fromEmail?: string; replyToEmail?: string; emailFormat?: string; lmx?: string; fallbacks?: unknown }
+export interface UploadInit { contentType: string; contentLength: number }
+export interface UploadResponse { emailAssetId: string; presignedUrl: string }
 
 export interface Contact {
   id?: string;
@@ -107,13 +115,43 @@ export class LoopsClient {
     return this.request<EmailMessage>(`/v1/email-messages/${encodeURIComponent(requireId(emailMessageId, "emailMessageId"))}`);
   }
 
+  async createCampaign(input: CreateCampaignInput): Promise<unknown> {
+    return this.request("/v1/campaigns", { method: "POST", body: JSON.stringify(input) });
+  }
+
+  async updateCampaign(campaignId: string, input: UpdateCampaignInput): Promise<unknown> {
+    return this.request(buildCampaignPath(campaignId), { method: "POST", body: JSON.stringify(input) });
+  }
+
+  async updateEmailMessage(emailMessageId: string, input: EmailMessageUpdate): Promise<unknown> {
+    return this.request(`/v1/email-messages/${encodeURIComponent(requireId(emailMessageId, "emailMessageId"))}`, { method: "POST", body: JSON.stringify(input) });
+  }
+
+  async previewEmailMessage(emailMessageId: string, input: { emails: string[]; contactProperties?: Record<string, unknown> }): Promise<unknown> {
+    return this.request(`/v1/email-messages/${encodeURIComponent(requireId(emailMessageId, "emailMessageId"))}/preview`, { method: "POST", body: JSON.stringify(input) });
+  }
+
+  async createUpload(input: UploadInit, bytes: Uint8Array): Promise<unknown> {
+    const upload = await this.request<UploadResponse>("/v1/uploads", { method: "POST", body: JSON.stringify(input) });
+    const put = await this.fetchFn(upload.presignedUrl, { method: "PUT", body: Buffer.from(bytes), headers: { "Content-Type": input.contentType } });
+    if (!put.ok) throw new Error(`Loops upload failed with status ${put.status}`);
+    return this.request(`/v1/uploads/${encodeURIComponent(upload.emailAssetId)}/complete`, { method: "POST" });
+  }
+
+  async listThemes(): Promise<Theme[] | { data: Theme[] }> { return this.request("/v1/themes"); }
+  async getTheme(id: string): Promise<Theme> { return this.request(`/v1/themes/${encodeURIComponent(requireId(id, "themeId"))}`); }
+  async listComponents(): Promise<Component[] | { data: Component[] }> { return this.request("/v1/components"); }
+  async getComponent(id: string): Promise<Component> { return this.request(`/v1/components/${encodeURIComponent(requireId(id, "componentId"))}`); }
   async listMailingLists(): Promise<MailingList[] | { data: MailingList[] }> {
-    return this.request(`/v1/mailing-lists`);
+    return this.request(`/v1/lists`);
   }
 
   async listAudienceSegments(): Promise<AudienceSegment[] | { data: AudienceSegment[] }> {
     return this.request(`/v1/audience-segments`);
   }
+
+  async getAudienceSegment(id: string): Promise<AudienceSegment> { return this.request(`/v1/audience-segments/${encodeURIComponent(requireId(id, "audienceSegmentId"))}`); }
+  async listContactProperties(): Promise<ContactProperty[] | { data: ContactProperty[] }> { return this.request("/v1/contact-properties"); }
 
   async findContact(emailOrUserId: string): Promise<Contact> {
     const value = requireId(emailOrUserId, "emailOrUserId");
