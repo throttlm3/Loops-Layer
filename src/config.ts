@@ -5,10 +5,7 @@ export interface AppConfig {
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const loopsApiKey = env.LOOPS_API_KEY?.trim();
-  if (!loopsApiKey) {
-    throw new Error("Missing required environment variable: LOOPS_API_KEY");
-  }
-
+  if (!loopsApiKey) throw new Error("Missing required environment variable: LOOPS_API_KEY");
   return {
     loopsApiKey,
     loopsBaseUrl: (env.LOOPS_API_BASE_URL ?? "https://app.loops.so/api").replace(/\/$/, ""),
@@ -21,10 +18,7 @@ export function redactSecret(value: string): string {
 }
 
 export function safeConfigSummary(config: AppConfig): object {
-  return {
-    loopsBaseUrl: config.loopsBaseUrl,
-    loopsApiKey: redactSecret(config.loopsApiKey),
-  };
+  return { loopsBaseUrl: config.loopsBaseUrl, loopsApiKey: redactSecret(config.loopsApiKey) };
 }
 
 export function isProductionEnvironment(env: NodeJS.ProcessEnv = process.env): boolean {
@@ -36,11 +30,7 @@ export function assertNoProductionWritesWithoutApproval(input: {
   approvalId?: string;
   operation: "send" | "schedule";
 }): void {
-  if (input.isProduction && !input.approvalId) {
-    throw new Error(
-      `Human approval is required before production ${input.operation}; provide approvalId`,
-    );
-  }
+  if (input.isProduction && !input.approvalId) throw new Error(`Human approval is required before production ${input.operation}; provide approvalId`);
 }
 
 export function requireApprovalMatch(input: {
@@ -54,15 +44,8 @@ export function requireApprovalMatch(input: {
   approvedAudienceFingerprint?: string;
   approvedSendMode?: "immediate" | "scheduled";
 }): void {
-  if (!input.approvalId) {
-    throw new Error("Human approval is required before sending or scheduling");
-  }
-  const matches =
-    input.approvedCampaignId === input.campaignId &&
-    input.approvedContentRevisionId === input.contentRevisionId &&
-    input.approvedAudienceFingerprint === input.audienceFingerprint &&
-    input.approvedSendMode === input.sendMode;
-  if (!matches) {
+  if (!input.approvalId) throw new Error("Human approval is required before sending or scheduling");
+  if (input.approvedCampaignId !== input.campaignId || input.approvedContentRevisionId !== input.contentRevisionId || input.approvedAudienceFingerprint !== input.audienceFingerprint || input.approvedSendMode !== input.sendMode) {
     throw new Error("Approval does not match the current campaign, content, audience, or send mode");
   }
 }

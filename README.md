@@ -1,31 +1,58 @@
 # Loops Layer
 
-Throttl-owned integration layer for Loops REST API campaign operations, lead synchronization, approval-gated sending, webhooks, and reporting.
+Thin MCP wrapper over the Loops REST API. This repository exists so Hermes can operate the Loops account directly through conversation without manually constructing HTTP requests.
 
-## Status
+## What it provides
 
-Foundation scaffold only. No production credentials, lead imports, or campaign sends are configured.
+The stdio MCP server currently exposes read-only tools for:
 
-## Planned sources
+- validating the Loops API key
+- listing campaigns and campaign pages
+- getting a campaign
+- getting an email message and content revision
+- listing mailing lists
+- listing audience segments
+- finding a contact
 
-- HubSpot
-- Instantly
-- Gabriel's personal lead lists
+The API key is read from `LOOPS_API_KEY` and is never returned by a tool.
 
-## Safety rule
+## Local setup
 
-Both immediate sends and scheduled sends require explicit human approval. This must be enforced by the service, not only by an agent instruction or skill.
-
-## Planned architecture
-
-```text
-Lead sources -> normalized lead sync -> Loops REST API
-                                      -> signed webhooks -> PostgreSQL reporting
-                                      -> Hermes business-level tools
+```bash
+npm install
+cp .env.example .env
+# set LOOPS_API_KEY in the environment or your secret manager
+npm run typecheck
+npm test
+npm run build
 ```
 
-## Development
+Run the server:
 
-The implementation stack is not selected yet. See `docs/plan.md` for the initial scope and decisions.
+```bash
+LOOPS_API_KEY=... npm start
+```
 
-Do not commit API keys, lead files, webhook secrets, or production data.
+The server uses MCP stdio transport. Hermes configuration will point at `dist/server.js` and pass `LOOPS_API_KEY` through the MCP server `env` block.
+
+## Current tool scope
+
+The first slice is intentionally read-only. Draft editing, previews, contact writes, and send/schedule operations will be added as separate tools. Immediate send and scheduled send will require explicit human approval in the tool contract and server-side guard before any Loops write.
+
+There is deliberately no generic raw HTTP tool.
+
+## Security
+
+Do not commit `.env`, API keys, contact exports, or production payloads. Review tool descriptions and output before enabling mutation tools.
+
+## Verification
+
+The repository currently passes:
+
+```bash
+npm test
+npm run typecheck
+npm run build
+```
+
+No live Loops credentials or external writes are required for the test suite.
