@@ -1,0 +1,17 @@
+{
+  "templateId": "operations-insight",
+  "templateVersion": 1,
+  "contentMode": "lmx",
+  "series": "Operations Insight",
+  "issueDate": "2026-06-01",
+  "issueNumber": 1,
+  "hero": {"eyebrow":"THROTTLAI PRESENTS","title":"The Operations Audit","subtitle":"Operations Insight"},
+  "introduction": {"body":"Five operational areas where family-owned companies leave money on the table."},
+  "sections": [
+    {"title":"How Manual Is Your Order-to-Cash Pipeline?","redFlag":"Someone is re-keying order data from emails into accounting.","metrics":[{"value":"$82K","label":"Monthly float lost on invoice delay"}],"body":"Automated workflows can read incoming orders, create invoices, and flag exceptions."},
+    {"title":"Where Does Your Tribal Knowledge Live?","redFlag":"Critical supplier and customer knowledge lives in one person's head.","metrics":[],"body":"Recorded conversations can become searchable operating guidance."}
+  ],
+  "scorecard": {"enabled": false},
+  "cta": {"label":"Book a 30-Minute Operations Review","url":"https://throttl.ai"},
+  "footer": {"unsubscribe": true,"preferences": true}
+}

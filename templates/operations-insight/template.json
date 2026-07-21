@@ -1,0 +1,18 @@
+{
+  "templateId": "operations-insight",
+  "version": 1,
+  "status": "active",
+  "reference": "Operations Insight Issue 01 PDF",
+  "contentModes": ["lmx", "html_mjml"],
+  "slots": [
+    {"id":"hero","type":"hero","required":true,"repeatable":false},
+    {"id":"introduction","type":"introduction","required":true,"repeatable":false},
+    {"id":"sections","type":"diagnostic_section","required":true,"repeatable":true,"min":1,"max":8},
+    {"id":"scorecard","type":"scorecard","required":false,"repeatable":false},
+    {"id":"cta","type":"call_to_action","required":true,"repeatable":false},
+    {"id":"footer","type":"footer","required":true,"repeatable":false}
+  ],
+  "lockedDesign": ["brand","typography","colors","spacing","responsive_layout","footer_compliance"],
+  "editableContent": ["headline","issue_number","issue_date","introduction","diagnostic_sections","metrics","scorecard","cta","images","links","signoff"],
+  "notes": "The original PDF uses five diagnostic sections; this definition intentionally supports one to eight sections and an optional scorecard."
+}
